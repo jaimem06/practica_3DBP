@@ -1,0 +1,73 @@
+.container {
+    max-width: 500px;
+    width: 100%;
+    background: #2f3d5c;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  }
+    
+  .container header {
+    font-size: 1.2rem;
+    color: white;
+    font-weight: 600;
+    text-align: center;
+  }
+    
+  .container .form {
+    margin-top: 15px;
+  }
+    
+  .form .input-box {
+    width: 100%;
+    margin-top: 10px;
+  }
+    
+  .input-box label {
+    color: white;
+  }
+    
+  .form :where(.input-box input, .select-box) {
+    height: 35px;
+    width: 100%;
+    font-size: 1rem;
+    color: white;
+    margin-top: 5px;
+    border: 1px solid #3754b4;
+    border-radius: 6px;
+    padding: 0 15px;
+    background: #2f3d5c;
+  }
+    
+  .input-box input:focus {
+    box-shadow: 0 1px 0 rgba(36, 156, 185, 0.1);
+  }
+    
+  .form .column {
+    display: flex;
+    column-gap: 15px;
+  }
+    
+  .estado :where(input, .select-box) {
+    margin-top: 10px;
+  }
+    
+  .select-box select {
+    height: 100%;
+    width: 100%;
+    color: white;
+    font-size: 1rem;
+    background: #2f3d5c;
+  }
+    
+  .form button {
+    height: 40px;
+    width: 100%;
+    color: #000;
+    font-size: 1rem;
+    font-weight: 400;
+    margin-top: 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    background: #3754b4;
+  }
