@@ -12,8 +12,8 @@ def token_required(f):
     # Es un componente para validar el token
     def decored(*args, **kwargs):
         token = None
-        if 'X-Access-Tokens' in request.headers:
-            token = request.headers['X-Access-Tokens']
+        if 'X-Access-Token' in request.headers:
+            token = request.headers['X-Access-Token']
         if not token:
             return make_response(
                 jsonify({"msg": "ERROR", "code": 401, "datos":{"error":Errores.error["-4"]}}),

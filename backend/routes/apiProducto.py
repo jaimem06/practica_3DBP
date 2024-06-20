@@ -1,10 +1,13 @@
-from flask import Blueprint, jsonify, make_response, request
+from flask import Blueprint, jsonify, make_response, request, current_app
 from controllers.productoController import ProductoController
 from models.producto import Producto
 from errors.errores import Errores
 from flask_expects_json import expects_json
 from schemas.schemasProducto import schemaProducto
 from controllers.authenticate import token_required
+from werkzeug.utils import secure_filename
+from datetime import datetime
+import os
 
 api_producto = Blueprint('api_producto', __name__)
 
@@ -53,7 +56,7 @@ def listarPorEstado(estado):
 
 # API para registrar producto
 @api_producto.route("/producto/registrar", methods=["POST"])
-@token_required
+#@token_required
 @expects_json(schemaProducto)
 def registrar():
     data = request.json
@@ -84,4 +87,63 @@ def modificar_producto(external_id):
         return make_response(
             jsonify({"msg": response, "code": 400}),
             400
+        )
+
+# API para registrar producto con imagen
+@api_producto.route("/productoimg/registrar", methods=["POST"])
+def registrar_con_imagen():
+    try:
+        data = request.form.to_dict()
+
+        upload_folder = current_app.config['UPLOAD_FOLDER'].lower()
+
+        if 'imagen' in request.files:
+            imagen = request.files['imagen']
+            filename = secure_filename(imagen.filename)
+            if not os.path.exists(upload_folder):
+                # Crear la carpeta en minúsculas
+                os.makedirs(upload_folder)
+            filepath = os.path.join(upload_folder, filename)
+            try:
+                imagen.save(filepath)
+            except Exception as e:
+                return make_response(
+                    jsonify({"msg": str(e), "code": 500}),
+                    500
+                )
+            data['imagen'] = filepath
+
+        # El resto del código sigue igual...
+
+        required_fields = ['nombre', 'nombre_lote', 'fecha_caducidad', 'cantidad', 'precio_unitario']
+        for field in required_fields:
+            if field not in data:
+                return make_response(
+                    jsonify({"msg": f"Missing required field: {field}", "code": 400}),
+                    400
+                )
+        # Validar el formato de la fecha
+        try:
+            datetime.strptime(data['fecha_caducidad'], '%Y-%m-%d')
+        except ValueError:
+            return make_response(
+                jsonify({"msg": "Formato invalido', enviar asi: YYYY-MM-DD", "code": 400}),
+                400
+            )
+
+        response = productoC.registrar_producto(data)
+        if isinstance(response, Producto):
+            return make_response(
+                jsonify({"msg": "OK", "code": 200, "datos": response.serialize}),
+                200
+            )
+        else:
+            return make_response(
+                jsonify({"msg": response, "code": 400}),
+                400
+            )
+    except Exception as e:
+        return make_response(
+            jsonify({"msg": str(e), "code": 500}),
+            500
         )

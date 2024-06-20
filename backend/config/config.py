@@ -25,3 +25,6 @@ class Config:
     SQLALCHEMY_ECHO = True
     SQLALCHEMY_RECORD_QUERIES = True
     SQLALCHEMY_TRACK_MODIFICATIONS = 'enable'
+
+    # Configuración para la carga de archivos
+    UPLOAD_FOLDER = environ.get('UPLOAD_FOLDER')

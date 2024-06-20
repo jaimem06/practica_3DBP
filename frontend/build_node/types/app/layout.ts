@@ -1,4 +1,4 @@
-// File: /home/j4ime/Documentos/practica_2_respaldo/frontend/src/app/layout.js
+// File: /home/j4ime/Documentos/GitHub/practica_2/frontend/src/app/layout.js
 import * as entry from '../../../src/app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

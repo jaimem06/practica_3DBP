@@ -39,3 +39,5 @@ next-env.d.ts
 backend/__pycache__
 backend/virtual
 backend/config/.env
+backend/media/kitkat.png
+backend/media/leche.png

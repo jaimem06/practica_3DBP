@@ -5,7 +5,7 @@ from models.estadoProducto import EstadoProducto
 from models.lote import Lote
 from models.detalleFactura import DetalleFactura
 
-class Producto (db.Model):
+class Producto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     external_id = db.Column(db.VARCHAR(60), default=str(uuid.uuid4()))
     nombre = db.Column(db.String(250))
@@ -16,6 +16,7 @@ class Producto (db.Model):
     estado = db.Column(db.Enum(EstadoProducto))
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    imagen_url = db.Column(db.String(500))
 
     detalle_fact_id = db.Column(db.Integer, db.ForeignKey(DetalleFactura.id))
     lote_id = db.Column(db.Integer, db.ForeignKey(Lote.id))
@@ -32,21 +33,11 @@ class Producto (db.Model):
             'estado': self.estado.name if self.estado else None,
             'created_at': self.created_at,
             'updated_at': self.updated_at,
+            'imagen_url': self.imagen_url,
+            'nombre_lote': self.lote.nombre,
             'detalle_fact_id': self.detalle_fact_id,
             'lote_id': self.lote_id
         }
-    
-    def copy(self):
-        return Producto(
-            nombre = self.nombre,
-            fecha_caducidad = self.fecha_caducidad,
-            cantidad = self.cantidad,
-            precio_unitario = self.precio_unitario,
-            stock = self.stock,
-            estado = self.estado,
-            detalle_fact_id = self.detalle_fact_id,
-            lote_id = self.lote_id
-        )
     
     ## Actualizar el estado del producto en la base de datos
     def actualizar_estado(self):

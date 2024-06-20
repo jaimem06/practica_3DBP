@@ -1,4 +1,4 @@
-// File: /home/j4ime/Documentos/practica_2_respaldo/frontend/src/app/productos/new/page.jsx
+// File: /home/j4ime/Documentos/GitHub/practica_2/frontend/src/app/productos/new/page.jsx
 import * as entry from '../../../../../src/app/productos/new/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

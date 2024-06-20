@@ -1,83 +1,69 @@
 'use client';
 import './styles.css';
-import { save_product, estado_civil } from '@/hooks/service_producto';
-import React, { useEffect, useState } from 'react';
+import { save_product } from '@/hooks/service_producto';
+import React from 'react';
 import swal from 'sweetalert';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import Sidebar from '@/app/components/sidebar';
 
-// Funcion para traer el enum de estado civil
-export default function NewPerson() {
-    const { register, handleSubmit } = useForm();
+export default function NewProduct() {
+    const { register, handleSubmit, formState: { errors } } = useForm();
     const router = useRouter();
 
-
-    // Funcion para guardar un censado
     const sendInfo = async (data) => {
-        let token = Cookies.get('token');
-        const info = await save_person_census(token, data);
-        if (info.code == '200') {
-            console.log(info);
-            swal({
-                title: "Info",
-                text: info.datos.tag,
-                icon: "success",
-                button: "Aceptar",
-                timer: 4000,
-                closeOnEsc: true,
-            });
-            router.push('/person')
-            router.refresh();
-        } else {
-            swal({
-                title: "Error",
-                text: info.datos.error,
-                icon: "error",
-                button: "Aceptar",
-                timer: 4000,
-                closeOnEsc: true,
-            });
-            console.log(info);
-            console.log("NO");
-        }
+        const token = Cookies.get('token');
+        const formData = new FormData();
+        Object.entries(data).forEach(([key, value]) => {
+            if (key === 'imagen' && value.length > 0) {
+                formData.append(key, value[0]);
+            } else if (key === 'fecha_caducidad') {
+                formData.append(key, value.split('T')[0]);
+            } else {
+                formData.append(key, value);
+            }
+        });
+
+        const info = await save_product(token, formData);
+        swal({
+            title: info.code === 200 ? "Info" : "Error",
+            text: info.msg,
+            icon: info.code === 200 ? "success" : "error",
+            button: "Aceptar",
+            timer: 4000,
+            closeOnEsc: true,
+        }).then(() => {
+            if (info.code === 200) router.push('/productos');
+        });
     }
-    const onSubmit = data => sendInfo(data);
 
     return (
         <div>
             <Sidebar />
             <section className="container" style={{ marginTop: "20px" }}>
                 <header>REGISTRAR NUEVO PRODUCTO</header>
-                <form className="form" onSubmit={handleSubmit(onSubmit)}>
-                    <div className="input-box">
-                        <label>Nombre Producto:</label>
-                        <input {...register('nombre')} required placeholder="Ingrese el nombre del producto" type="text" />
-                    </div>
-                    <div className="input-box">
-                        <label>Cantidad:</label>
-                        <input {...register('cantidad')} required placeholder="Ingresa la cantidad de productos" type="number" />
-                    </div>
-                    <div className="column">
-                        <div className="input-box">
-                            <label>Fecha de Caducidad:</label>
-                            <input {...register('fecha_caducidad')} required placeholder="Fecha de nacimiento" type="date" />
+                <form className="form" onSubmit={handleSubmit(sendInfo)}>
+                    {['nombre', 'cantidad', 'precio_unitario', 'fecha_caducidad', 'nombre_lote'].map((field) => (
+                        <div className="input-box" key={field}>
+                            <label>{field.replace('_', ' ').toUpperCase()}:</label>
+                            {errors[field] && <span style={{ color: "#E83030", marginLeft: "10px" }}>Este campo es obligatorio</span>}
+                            <input
+                                {...register(field, { required: true })}
+                                placeholder={`Ingrese ${field}`}
+                                type={field === 'fecha_caducidad' ? 'date' : field === 'cantidad' || field === 'precio_unitario' ? 'number' : 'text'}
+                                step={field === 'cantidad' ? "1" : "0.01"}
+                            />
                         </div>
-                    </div>
-                    <div className="input-box">
-                        <label>Nombre del Lote:</label>
-                        <input {...register('nombre_lote')} required placeholder="Ingrese el nombre del lote" type="text" />
-                    </div>
-                    <div class="grid w-full max-w-xs items-center gap-1.5">
+                    ))}
+                    <div className="grid w-full max-w-xs items-center gap-1.5">
                         <label>Cargar Imagen:</label>
-                        <input
-                            class="flex w-full rounded-md border border-blue-400 border-input bg-white text-sm text-gray-600 file:border-0 file:bg-blue-600 file:text-white file:text-sm file:font-medium"
-                            type="file"
-                            id="picture"
+                        <input {...register('imagen')}
+                            className="flex w-full rounded-md border border-blue-100 border-input bg-white text-sm text-gray-800 file:border-0 file:bg-blue-600 file:text-white file:text-sm file:font-medium"
+                            type="file" id="picture"
+                            accept="image/png, image/jpeg, image/gif"
                         />
                     </div>
-
                     <button type="submit">Guardar Datos</button>
                 </form>
             </section>

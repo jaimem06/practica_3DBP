@@ -3,25 +3,29 @@ from models.lote import Lote
 from errors.errores import Errores
 import uuid
 from app import db
-from datetime import datetime, timezone, timedelta
-from flask import current_app
+from datetime import datetime, timedelta
 from models.estadoProducto import EstadoProducto
+from flask import current_app
 
 class ProductoController:
 
-    # Metodo para listar productos
+    # Método para listar productos
     def listar(self):
         return Producto.query.all()
-    
-    # Metodo para listar por external_id
+
+    # Método para listar por external_id
     def listarPorExternalId(self, external_id):
         return Producto.query.filter_by(external_id=external_id).first()
-    
-    # Metodo para listar por estado
+
+    # Método para listar por estado
     def listarPorEstado(self, estado):
         return Producto.query.filter_by(estado=estado).all()
-    
-    # Metodo para registrar productos
+
+    # Método para registrar productos con imagen
+    def registrar_producto(self, data):
+        return self.registrar(data)
+
+    # Método para registrar productos
     def registrar(self, data):
         try:
             # Verificar si ya existe un lote con el mismo nombre
@@ -48,22 +52,24 @@ class ProductoController:
 
             # Crear el producto
             producto = Producto(
-                external_id = str(uuid.uuid4()),
-                nombre = data['nombre'],
-                fecha_caducidad = data['fecha_caducidad'],
-                cantidad = data['cantidad'],
-                precio_unitario = data['precio_unitario'],
-                lote_id = lote.id,
-                estado = estado
+                external_id=str(uuid.uuid4()),
+                nombre=data['nombre'],
+                fecha_caducidad=data['fecha_caducidad'],
+                cantidad=data['cantidad'],
+                precio_unitario=data['precio_unitario'],
+                lote_id=lote.id,
+                estado=estado,
+                imagen_url=data.get('imagen')
             )
 
             db.session.add(producto)
-            db.session.commit()
+            db.session.commit() 
             return producto
         except Exception as e:
+            print(f"Error al registrar el producto: {e}")  # Imprimir o registrar el error
             return Errores.error["-2"]
 
-    # Metodo para modificar producto
+    # Método para modificar producto
     def modificar(self, external_id, data):
         try:
             producto = Producto.query.filter_by(external_id=external_id).first()

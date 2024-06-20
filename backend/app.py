@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 import pymysql
 
@@ -25,4 +25,14 @@ def create_app():
         # Creacion de las tablas
         db.create_all()
         #db.drop_all()
+
+        # Ruta para servir archivos estáticos desde la carpeta Media
+        @app.route('/media/<path:filename>')
+        def media(filename):
+            return send_from_directory('media', filename)
+
     return app
+
+if __name__ == '__main__':
+    app = create_app()
+    app.run(debug=True)

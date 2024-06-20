@@ -6,7 +6,7 @@ async function validarTokenBackend(token) {
     const response = await fetch(url, {
       method: 'GET',
       headers: {
-        'X-Access-Tokens': token.value,
+        'X-Access-Token': token.value,
         'Content-Type': 'application/json',
       },
     });
