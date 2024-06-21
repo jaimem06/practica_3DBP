@@ -8,7 +8,6 @@ from models.estadoProducto import EstadoProducto
 from flask import current_app
 
 class ProductoController:
-
     # Método para listar productos
     def listar(self):
         return Producto.query.all()
@@ -28,12 +27,10 @@ class ProductoController:
     # Método para registrar productos
     def registrar(self, data):
         try:
-            # Verificar si ya existe un lote con el mismo nombre
             lote_existente = Lote.query.filter_by(nombre=data['nombre_lote']).first()
             if lote_existente:
                 return Errores.error["-3"]
 
-            # Crear lote
             lote = Lote(
                 nombre=data['nombre_lote'],
                 estado=True,
@@ -41,7 +38,6 @@ class ProductoController:
             db.session.add(lote)
             db.session.commit()
 
-            # Determinar el estado del producto basado en la fecha de caducidad
             fecha_caducidad = datetime.strptime(data['fecha_caducidad'], '%Y-%m-%d')
             if fecha_caducidad <= datetime.now():
                 estado = EstadoProducto.CADUCADO
@@ -50,7 +46,6 @@ class ProductoController:
             else:
                 estado = EstadoProducto.BUEN_ESTADO
 
-            # Crear el producto
             producto = Producto(
                 external_id=str(uuid.uuid4()),
                 nombre=data['nombre'],
@@ -63,10 +58,10 @@ class ProductoController:
             )
 
             db.session.add(producto)
-            db.session.commit() 
+            db.session.commit()
             return producto
         except Exception as e:
-            print(f"Error al registrar el producto: {e}")  # Imprimir o registrar el error
+            print(f"Error al registrar el producto: {e}")
             return Errores.error["-2"]
 
     # Método para modificar producto
@@ -74,13 +69,12 @@ class ProductoController:
         try:
             producto = Producto.query.filter_by(external_id=external_id).first()
             if not producto:
-                return Errores.error["-1"]  # Producto no encontrado
+                return Errores.error["-1"]
 
             if 'nombre' in data:
                 producto.nombre = data['nombre']
             if 'fecha_caducidad' in data:
                 producto.fecha_caducidad = data['fecha_caducidad']
-                # Reevaluar el estado del producto basado en la nueva fecha de caducidad
                 fecha_caducidad = datetime.strptime(data['fecha_caducidad'], '%Y-%m-%d')
                 if fecha_caducidad <= datetime.now():
                     producto.estado = EstadoProducto.CADUCADO
@@ -97,10 +91,13 @@ class ProductoController:
                 if lote_existente:
                     producto.lote_id = lote_existente.id
                 else:
-                    return Errores.error["-7"]  # Lote no encontrado
+                    return Errores.error["-7"]
+            if 'imagen' in data:
+                producto.imagen_url = data['imagen']
 
             db.session.commit()
             return producto
         except Exception as e:
             current_app.logger.error(f'Error al modificar producto: {e}')
-            return Errores.error["-2"]  # Error al modificar producto
+            db.session.rollback()
+            return Errores.error["-2"]

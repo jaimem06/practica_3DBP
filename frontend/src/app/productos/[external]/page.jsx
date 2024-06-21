@@ -1,112 +1,108 @@
 'use client';
 import './styles.css';
 import { modify_producto, get_producto } from '@/hooks/service_producto';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import swal from 'sweetalert';
+import Sidebar from '@/app/components/sidebar';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 
-// Funcion para traer el enum de estado civil
-export default function ModificarPerson(params) {
-    const [estadoCivil, setEstadoCivil] = useState([]);
+export default function ModificarProducto(params) {
     const { register, handleSubmit, setValue } = useForm();
     const router = useRouter();
 
-    const fetchPersonData = async () => {
+    const fetchProductoData = async () => {
         const token = Cookies.get('token');
         const response = await get_producto(token, params.params.external);
-        const data = response.datos; // Accede a los datos correctos
+        const data = response.datos;
         setValue('nombre', data.nombre);
-        setValue('fecha_caducidad', data.fecha_caducidad);
+        const formattedDate = new Date(data.fecha_caducidad).toISOString().split('T')[0];
+        setValue('fecha_caducidad', formattedDate);
         setValue('cantidad', data.cantidad);
         setValue('precio_unitario', data.precio_unitario);
-        setValue('nombre_lote', data.lote);
+        setValue('nombre_lote', data.nombre_lote);
     };
 
     useEffect(() => {
-        const fetchEstadoCivil = async () => {
-            const data = await estado_civil();
-            setEstadoCivil(data);
-        };
-
-        fetchPersonData();
-        fetchEstadoCivil();
+        fetchProductoData();
     }, []);
 
-    // Funcion para modificar un censado
-    const sendInfo = async (data) => {
-        // Verificar que los datos no estén vacíos
-        if (!data.nombres || !data.apellidos || !data.fecha_nac || !data.estado) {
-            swal({
-                title: "Error",
-                text: "Todos los campos son obligatorios",
-                icon: "error",
-                button: "Aceptar",
-                timer: 4000,
-                closeOnEsc: true,
-            });
-            return;
+const sendInfo = async (data) => {
+    const formData = new FormData();
+    Object.keys(data).forEach(key => {
+        if (key === 'imagen' && data[key].length > 0) {
+            formData.append(key, data[key][0]);
+        } else {
+            formData.append(key, data[key]);
         }
+    });
 
-        let token = Cookies.get('token');
-        const info = await modify_producto(token, params.params.external, data);
-        if (info.code == 200) {
+    let token = Cookies.get('token');
+    try {
+        const response = await modify_producto(params.params.external, formData, token);
+        // Asumiendo que modify_producto ya procesa la respuesta y devuelve un objeto JavaScript
+        if (response && response.status === 200) {
+            // Directamente accediendo a las propiedades del objeto sin llamar a .json()
             swal({
-                title: "Info",
-                text: info.msg,
+                title: "Éxito",
+                text: response.msg || "Producto modificado con éxito.",
                 icon: "success",
                 button: "Aceptar",
                 timer: 4000,
                 closeOnEsc: true,
             });
-            router.push('/person');
-            router.refresh();
+            router.push('/productos');
         } else {
-            swal({
-                title: "Error",
-                text: info.datos.error,
-                icon: "error",
-                button: "Aceptar",
-                timer: 4000,
-                closeOnEsc: true,
-            });
+            // Manejo de error basado en la respuesta ya procesada
+            throw new Error(response.msg || "Error desconocido al modificar el producto.");
         }
-    };
-
+    } catch (error) {
+        swal({
+            title: "Error",
+            text: error.message || "Error al modificar el producto. Intente nuevamente.",
+            icon: "error",
+            button: "Aceptar",
+            timer: 4000,
+            closeOnEsc: true,
+        });
+    }
+};
     const onSubmit = data => sendInfo(data);
 
     return (
         <div>
-            <section className="container" style={{ marginTop: "20px" }}>
-                <header>Modificar Censado</header>
+            <Sidebar />
+            <section className="container">
+                <header>Modificar Producto</header>
                 <form className="form" onSubmit={handleSubmit(onSubmit)}>
                     <div className="input-box">
-                        <label>Nombres:</label>
-                        <input {...register('nombres')} required placeholder="Ingresa los nombres" type="text" />
+                        <label>Nombre:</label>
+                        <input {...register('nombre')} required placeholder="Nombre del producto" type="text" />
                     </div>
                     <div className="input-box">
-                        <label>Apellidos:</label>
-                        <input {...register('apellidos')} required placeholder="Ingresa los apellidos" type="text" />
+                        <label>Cantidad:</label>
+                        <input {...register('cantidad')} required placeholder="Cantidad" type="number" />
                     </div>
-                    <div className="column">
-                        <div className="input-box">
-                            <label>Fecha de Nacimiento:</label>
-                            <input {...register('fecha_nac')} required placeholder="Fecha de nacimiento" type="date" />
-                        </div>
+                    <div className="input-box">
+                        <label>Precio Unitario:</label>
+                        <input {...register('precio_unitario')} required placeholder="Precio Unitario" type="number" step="0.01" />
                     </div>
-                    <div className="input-box estado">
-                        <label>Estado Civil</label>
-                        <div className="column">
-                            <div className="select-box">
-                                <select {...register('estado')} required>
-                                    <option hidden>Estado Civil</option>
-                                    {estadoCivil.map((estado, index) => (
-                                        <option key={index} value={estado}>{estado}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
+                    <div className="input-box">
+                        <label>Fecha de Caducidad:</label>
+                        <input {...register('fecha_caducidad')} required placeholder="Fecha de Caducidad" type="date" />
+                    </div>
+                    <div className="input-box">
+                        <label>Nombre del Lote:</label>
+                        <input {...register('nombre_lote')} required placeholder="Nombre del Lote" type="text" />
+                    </div>
+                    <div className="grid w-full max-w-xs items-center gap-1.5">
+                        <label>Cargar Imagen:</label>
+                        <input {...register('imagen')}
+                            className="flex w-full rounded-md border border-blue-100 border-input bg-white text-sm text-gray-800 file:border-0 file:bg-blue-600 file:text-white file:text-sm file:font-medium"
+                            type="file" id="picture"
+                            accept="image/png, image/jpeg, image/gif"
+                        />
                     </div>
                     <button type="submit">MODIFICAR</button>
                 </form>

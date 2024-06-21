@@ -33,7 +33,6 @@ export const POST_IMG = async (resource, formData, token = "NONE") => {
     let config = {
         headers: {
             "Accept": "application/json",
-            // No establecer "Content-Type", axios lo hará automáticamente
         }
     };
     if (token !== "NONE") {

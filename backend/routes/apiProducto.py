@@ -13,7 +13,6 @@ api_producto = Blueprint('api_producto', __name__)
 
 productoC = ProductoController()
 
-# API para listar producto
 @api_producto.route("/producto")
 #@token_required
 def listar():
@@ -22,7 +21,6 @@ def listar():
         200
     )
 
-# API listar por external_id
 @api_producto.route("/producto/<external_id>")
 @token_required
 def listarPorExternalId(external_id):
@@ -38,7 +36,6 @@ def listarPorExternalId(external_id):
             400
         )
 
-# API para listar por estado
 @api_producto.route("/producto/estado/<estado>")
 @token_required
 def listarPorEstado(estado):
@@ -54,7 +51,6 @@ def listarPorEstado(estado):
             400
         )
 
-# API para registrar producto
 @api_producto.route("/producto/registrar", methods=["POST"])
 #@token_required
 @expects_json(schemaProducto)
@@ -72,15 +68,22 @@ def registrar():
             400
         )
 
-# API para modificar producto
 @api_producto.route("/producto/modificar/<external_id>", methods=["POST"])
 @token_required
 def modificar_producto(external_id):
-    data = request.json
+    data = request.form.to_dict() 
+    imagen_file = request.files['imagen'] if 'imagen' in request.files else None
+
+    if imagen_file:
+        filename = secure_filename(imagen_file.filename)
+        filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+        imagen_file.save(filepath)
+        data['imagen'] = filepath
+
     response = productoC.modificar(external_id, data)
     if isinstance(response, Producto):
         return make_response(
-            jsonify({"msg": "Producto modificado con éxito", "code": 200, "datos": response.serialize}),
+            jsonify({"msg": "Producto modificado con éxito", "code": 200, "datos": response.serialize}),  # Cambiado aquí
             200
         )
     else:
@@ -89,7 +92,6 @@ def modificar_producto(external_id):
             400
         )
 
-# API para registrar producto con imagen
 @api_producto.route("/productoimg/registrar", methods=["POST"])
 def registrar_con_imagen():
     try:
@@ -101,7 +103,6 @@ def registrar_con_imagen():
             imagen = request.files['imagen']
             filename = secure_filename(imagen.filename)
             if not os.path.exists(upload_folder):
-                # Crear la carpeta en minúsculas
                 os.makedirs(upload_folder)
             filepath = os.path.join(upload_folder, filename)
             try:
@@ -113,8 +114,6 @@ def registrar_con_imagen():
                 )
             data['imagen'] = filepath
 
-        # El resto del código sigue igual...
-
         required_fields = ['nombre', 'nombre_lote', 'fecha_caducidad', 'cantidad', 'precio_unitario']
         for field in required_fields:
             if field not in data:
@@ -122,7 +121,6 @@ def registrar_con_imagen():
                     jsonify({"msg": f"Missing required field: {field}", "code": 400}),
                     400
                 )
-        # Validar el formato de la fecha
         try:
             datetime.strptime(data['fecha_caducidad'], '%Y-%m-%d')
         except ValueError:
