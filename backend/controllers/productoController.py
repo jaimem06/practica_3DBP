@@ -4,6 +4,7 @@ from errors.errores import Errores
 import uuid
 from app import db
 from datetime import datetime, timedelta
+from models.sucursal import Sucursal
 from models.estadoProducto import EstadoProducto
 from flask import current_app
 
@@ -46,6 +47,10 @@ class ProductoController:
             else:
                 estado = EstadoProducto.BUEN_ESTADO
 
+            sucursal = Sucursal.query.filter_by(id=data['sucursal_id']).first()
+            if not sucursal:
+                return Errores.error["-10"]  # Código de error para sucursal no encontrada
+
             producto = Producto(
                 external_id=str(uuid.uuid4()),
                 nombre=data['nombre'],
@@ -54,7 +59,8 @@ class ProductoController:
                 precio_unitario=data['precio_unitario'],
                 lote_id=lote.id,
                 estado=estado,
-                imagen_url=data.get('imagen')
+                imagen_url=data.get('imagen'),
+                sucursal_id=sucursal.id  # Asociar producto con sucursal
             )
 
             db.session.add(producto)

@@ -7,4 +7,7 @@ class Errores:
         "-5": "El token de autenticación es inválido o ha expirado",
         "-6": "No se pudo iniciar sesion",
         "-7": "Lote no encontrado",
+        "-8": "No se pudo crear la sucursal",
+        "-9": "No se pudo encontrar la sucursal",
+        "-10": "Ya existe una sucursal con ese nombre o dirección",
     }

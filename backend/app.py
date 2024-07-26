@@ -18,13 +18,15 @@ def create_app():
         from routes.apiProducto import api_producto
         from routes.apiUsuario import api_usuario
         from routes.api_validarToken import api_validarToken
+        from routes.api_sucursal import api_sucursal
         app.register_blueprint(api)
         app.register_blueprint(api_producto)
         app.register_blueprint(api_usuario)
         app.register_blueprint(api_validarToken)
+        app.register_blueprint(api_sucursal)
         # Creacion de las tablas
         db.create_all()
-        #db.drop_all()
+        # db.drop_all()
 
         # Ruta para servir archivos estáticos desde la carpeta Media
         @app.route('/media/<path:filename>')

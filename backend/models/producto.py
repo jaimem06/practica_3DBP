@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from models.estadoProducto import EstadoProducto
 from models.lote import Lote
 from models.detalleFactura import DetalleFactura
+from models.sucursal import Sucursal
 
 class Producto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -20,6 +21,7 @@ class Producto(db.Model):
 
     detalle_fact_id = db.Column(db.Integer, db.ForeignKey(DetalleFactura.id))
     lote_id = db.Column(db.Integer, db.ForeignKey(Lote.id))
+    sucursal_id = db.Column(db.Integer, db.ForeignKey(Sucursal.id))
 
     @property
     def serialize(self):
@@ -31,12 +33,11 @@ class Producto(db.Model):
             'precio_unitario': self.precio_unitario,
             'stock': self.stock,
             'estado': self.estado.name if self.estado else None,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at,
             'imagen_url': self.imagen_url,
             'nombre_lote': self.lote.nombre,
             'detalle_fact_id': self.detalle_fact_id,
-            'lote_id': self.lote_id
+            'lote_id': self.lote_id,
+            'sucursal_id': self.sucursal_id
         }
     
     ## Actualizar el estado del producto en la base de datos
